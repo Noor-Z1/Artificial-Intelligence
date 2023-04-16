@@ -8,6 +8,10 @@ treasure_map = {"starting_point": [("stormy_ocean", 4), ("forest", 7)],
                 "desert": [("treasure", 10)],
                 "treasure": []}
 
+heuristic = {"starting_point":1, "stormy_ocean":2, "forest": 3, "desert":3, "treasure":0}
+
+
+
 # Request 2a. Apply Uniform cost search find the cheapest path to the treasure.
 def uniform_cost_search(graph, start, goal):
     print("Applying UCS:")
@@ -54,4 +58,55 @@ def uniform_cost_search(graph, start, goal):
 path = uniform_cost_search(treasure_map, "starting_point", "treasure")
 
 # Request 2a. Apply A* to find the cheapest path to the treasure.
+def a_star_search(graph, start, goal):
+  
+  
+  frontier = [(0, start, [])]
+  # explored will keep track of the explored nodes
+  explored = set()
+  
+  print("Applying A* search: ")
+
+  i=0
+  while frontier:
+        # we pop the first element of the frontier list because it is the one with
+        # minimum cost. Next, we will explore its neighbors.
+        (priority, current, path) = heapq.heappop(frontier)
+
+
+        # check if we got to the goal. if so, end the loop and return the path to the goal
+        if current == goal:
+            print("Solution Path:  ", "-> ".join(str(state) for state in path+[current]), " with total cost", priority)
+            return path + [current]
+
+        # if it is already explored, it means that we already added its
+        # neighbors to the heap, so we can continue.
+        if current in explored:
+            continue
+
+        explored.add(current)
+
+        # remember to add the neighbors of the recently explored node.
+        # check the treasure_map to find the neighbors and their respective costs
+        i=0
+        names = list(heuristic)
+      
+        for neighbor, cost in graph[current]:
+            if neighbor not in explored:
+               
+                
+                if(current == start):
+                   print(current, "-", neighbor, ": Cost is", priority+cost)
+                   heapq.heappush(frontier, (priority + cost + (heuristic[names[i+1]]) , neighbor, path + [current]))
+                else:
+                  print(current, "-", neighbor, ": Cost is", priority+cost - heuristic[current])
+                  heapq.heappush(frontier, (priority + cost - heuristic[current] + heuristic[neighbor] , neighbor, path + [current]))
+
+                print(frontier)
+                i=i+1
+                 
+
+  return None              
+
+path = a_star_search(treasure_map, "starting_point", "treasure")
 
