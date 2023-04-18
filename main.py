@@ -1,4 +1,5 @@
 import heapq
+from collections import deque
 # Task 1
 
 # Request 1. Data structure to represent and construct the treasure map
@@ -100,4 +101,33 @@ def a_star_search(graph, start, goal):
     return None
 
 path = a_star_search(treasure_map, "starting_point", "treasure")
+
+# Task 2
+
+# Request 2 - Breadth First Search:
+def bfs(graph, start, finish):
+    # Keep track of visited nodes to avoid infinite loops and duplicate visits
+    visited = set()
+    # Use a queue to implement BFS. deque => double-ended queue
+    queue = deque([(start, [start])]) # tuple contains current node and its path
+    # Mark the start node as visited
+    visited.add(start)
+
+    # Iterate over the queue until it is empty
+    while queue:
+        # Dequeue the node at the front of the queue and its path
+        vertex, path = queue.popleft()
+        # If we have reached the finish node, return the path to it
+        if vertex == finish:
+            return path
+        # Otherwise, explore the neighbors of the current node
+        for neighbor in graph[vertex]:
+            # If we haven't visited the neighbor yet, mark it as visited and add it to the queue
+            if neighbor not in visited:
+                visited.add(neighbor)
+                # Append the neighbor to the current path to get the path to the neighbor
+                queue.append((neighbor, path + [neighbor]))
+
+    # If we have explored the entire graph and haven't found the finish node, return None
+    return None
 
