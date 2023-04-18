@@ -104,6 +104,12 @@ path = a_star_search(treasure_map, "starting_point", "treasure")
 
 # Task 2
 
+# For creating the maze, take the coordinates of the start and finish from the user
+# assume that indeces start from (0,0) => top left  &  (n,n) => bottom right.
+# First, make sure that start and finish coordinates are valid and are within the maze.
+
+
+
 # Request 2 - Breadth First Search:
 def bfs(graph, start, finish):
     # Keep track of visited nodes to avoid infinite loops and duplicate visits
@@ -132,10 +138,12 @@ def bfs(graph, start, finish):
     return None
 
 
-# Define the Manhattan distance heuristic function.
+# Define the Manhattan distance heuristic function to be used for the A* Search algorithm.
 def manhattan_distance(point1, point2):
     # It calculates the absolute difference between the x
     # and y coordinates of the two points and returns their sum.
     x1, y1 = point1
     x2, y2 = point2
     return abs(x2 - x1) + abs(y2 - y1)
+
+
