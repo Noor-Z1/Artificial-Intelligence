@@ -131,3 +131,11 @@ def bfs(graph, start, finish):
     # If we have explored the entire graph and haven't found the finish node, return None
     return None
 
+
+# Define the Manhattan distance heuristic function.
+def manhattan_distance(point1, point2):
+    # It calculates the absolute difference between the x
+    # and y coordinates of the two points and returns their sum.
+    x1, y1 = point1
+    x2, y2 = point2
+    return abs(x2 - x1) + abs(y2 - y1)
