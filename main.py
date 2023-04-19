@@ -1,5 +1,8 @@
+import numpy as np
 import heapq
 from collections import deque
+
+
 # Task 1
 
 # Request 1. Data structure to represent and construct the treasure map
@@ -147,3 +150,111 @@ def manhattan_distance(point1, point2):
     return abs(x2 - x1) + abs(y2 - y1)
 
 
+
+def extract_coordinates(str1):
+
+    start_index = str1.find("(")
+    end_index = str1.find(")")
+
+    # Extract the substring containing the tuple values
+    tuple_str = str1[start_index:end_index+1]
+    # Split the tuple string into individual values
+    tuple_values = tuple_str.strip("()").split(",")
+    # Convert the tuple values to integers and return the tuple
+    return tuple(map(int, tuple_values))
+
+
+def graph_from_file(filename):
+    
+   # Open the file
+   with open(filename, 'r') as file:
+    # Read the lines of the file
+    lines = [line.strip() for line in file.readlines()]
+
+    # Extract the start and end points as strings from the last two lines
+    start_str = lines[-2]
+    end_str = lines[-1]
+
+    
+    start = extract_coordinates(start_str)
+    end = extract_coordinates(end_str)
+
+    # Convert the remaining lines to a matrix of integers
+    matrix = [[int(cell) for cell in line.split()] for line in lines[:-2]]
+    
+    maze = []
+
+    #get rid of any empty lines
+    for items in range(len(matrix)):
+        if matrix[items] == []:
+            continue
+        else:
+            maze.append(matrix[items])
+
+
+
+   return maze, start, end
+
+
+
+#Version 2 of A* search
+def a_star_updated(filename):
+    
+    matrix, start, end = graph_from_file(filename)
+    matrix=  np.array(matrix)
+    
+    
+    visited = set()
+    not_visited =[]
+
+    available_moves = ((0, -1), (0, 1), (-1, 0), (1, 0))
+    
+    rows,cols = np.shape(matrix)
+
+
+
+    frontier = [(matrix[start[0]][start[1]], start, [])]
+   
+    print(frontier)
+
+    while frontier:
+        # we pop the first element of the frontier list because it is the one with
+        # minimum cost. Next, we will explore its neighbors.
+        (priority, current, path) = heapq.heappop(frontier)
+        
+
+        if current in visited:
+            continue
+
+        visited.add(current)
+
+        if current == end:
+            print("Solution Path:  ", "-> ".join(str(state) for state in path+[current]), " with total cost", priority)
+            return path + [current]
+
+
+        
+
+        for moves in available_moves:
+            neighbour = (current[0] + moves[0], current[1] + moves[1])
+
+
+            #validate neighbour
+            if(neighbour[0]< 0 or neighbour[0]> rows-1 or neighbour[1] > cols -1 or neighbour [1] < 0):
+                continue
+
+            #check is there is wall or not
+            if matrix[neighbour[0]][neighbour[1]]==0:
+                continue
+
+            if neighbour not in visited:
+                cost = matrix[neighbour[0]][neighbour[1]]
+                heuristic_current = manhattan_distance(current, end)
+                heuristic_neighbour = manhattan_distance(neighbour, end)
+                heapq.heappush(frontier, (priority + cost - heuristic_current + heuristic_neighbour, neighbour, path + [current]))
+
+
+            
+
+
+a_star_updated("maze.txt")
