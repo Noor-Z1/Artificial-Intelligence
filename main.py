@@ -264,4 +264,4 @@ def a_star_updated(filename):
     return None
 
 
-a_star_updated("maze4.txt")
+a_star_updated("maze_test_heuristic_possible_several_paths.txt")
