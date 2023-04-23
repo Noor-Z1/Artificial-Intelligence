@@ -114,31 +114,102 @@ def a_star_search(graph, start, goal):
 
 
 # Request 2 - Breadth First Search:
-def bfs(graph, start, finish):
+def bfs(filename):
     # Keep track of visited nodes to avoid infinite loops and duplicate visits
+    
+    #note that heuristic is not used in this function
+    graph, heuristic, start, finish = graph_from_file(filename)
+    
     visited = set()
     # Use a queue to implement BFS. deque => double-ended queue
     queue = deque([(start, [start])]) # tuple contains current node and its path
     # Mark the start node as visited
     visited.add(start)
+    
+
+
+    i=0
 
     # Iterate over the queue until it is empty
     while queue:
         # Dequeue the node at the front of the queue and its path
         vertex, path = queue.popleft()
+
+       
+        if i>0:
+            vertex = vertex[0]
+        #print(graph)
+    
         # If we have reached the finish node, return the path to it
         if vertex == finish:
             return path
         # Otherwise, explore the neighbors of the current node
         for neighbor in graph[vertex]:
             # If we haven't visited the neighbor yet, mark it as visited and add it to the queue
+     
+            i=i+1
             if neighbor not in visited:
                 visited.add(neighbor)
                 # Append the neighbor to the current path to get the path to the neighbor
                 queue.append((neighbor, path + [neighbor]))
-
+        
     # If we have explored the entire graph and haven't found the finish node, return None
     return None
+
+
+
+#request 2
+
+def uniform_cost_search_v2(filename):
+     
+
+    print("Applying UCS:")
+
+
+     #note that heuristic is not used in this function
+    graph, heuristic, start, goal = graph_from_file(filename)
+    
+
+
+    # Priority queue of (priority, node, path).
+    # Initially, it only includes the start state <=> starting point.
+    frontier = [(0, start, [])]
+    # explored will keep track of the explored nodes
+    explored = set()
+
+    print("Starting point: Cost is 0")
+
+    # The while loop continues until the frontier queue becomes empty
+    # (i.e., there are no more nodes to explore). Or, it is also possible
+    # to end the loop if we already reached our goal.
+    while frontier:
+        # we pop the first element of the frontier list because it is the one with
+        # minimum cost. Next, we will explore its neighbors.
+        (priority, current, path) = heapq.heappop(frontier)
+
+        # check if we got to the goal. if so, end the loop and return the path to the goal
+        if current == goal:
+            print("Solution Path:  ", "-> ".join(str(state) for state in path+[current]), " with total cost", priority)
+            return path + [current]
+
+        # if it is already explored, it means that we already added its
+        # neighbors to the heap, so we can continue.
+        if current in explored:
+            continue
+
+        explored.add(current)
+
+        # remember to add the neighbors of the recently explored node.
+        # check the treasure_map to find the neighbors and their respective costs
+        for neighbor, cost in graph[current]:
+            if neighbor not in explored:
+                print(current, "-", neighbor, ": Cost is", priority+cost)
+                heapq.heappush(frontier, (priority + cost, neighbor, path + [current]))
+
+    # note the Completeness property: if there is a solution, the algorithm finds it, otherwise
+    # it reports failure, which is returning none.
+    return None
+
 
 
 # Define the Manhattan distance heuristic function to be used for the A* Search algorithm.
@@ -176,67 +247,97 @@ def graph_from_file(filename):
     
     start = extract_coordinates(start_str)
     end = extract_coordinates(end_str)
+    print(lines[:-2])
+    maze = {}
+    heuristic = {}
 
-    # Convert the remaining lines to a matrix of integers
-    matrix = [[int(cell) for cell in line.split()] for line in lines[:-2]]
-    print(matrix)
-    maze = []
-
-    # get rid of any empty lines
-    for items in range(len(matrix)):
-        if matrix[items] == []:
+    for line_num in range(len(lines[:-3])):
+        # represents either a wall or a pathway so just ignore it while creating the graph
+        if line_num % 2 == 1:
             continue
-        else:
-            maze.append(matrix[items])
 
-    return maze, start, end
+        for char_num in range(len(lines[line_num])):
+            if char_num % 2 == 1:
+                continue
+            # we divide the manhattan distance by 2 because the walls and pathways shouldn't be counted
+            # while calculating the distance
+            heuristic[(line_num, char_num)] = manhattan_distance((line_num, char_num), end) / 2
+            maze[(line_num, char_num)] = []
+
+            # if it is the right-most, don't check for the neighbors to the right
+            if char_num != (len(lines[line_num]) - 1):
+                if lines[line_num][char_num + 1] == '*':
+                    maze[(line_num, char_num)].append(((line_num, char_num+2), int(lines[line_num][char_num + 2])))
+
+            # if it is the left-most, don't check for the neighbors to the left
+            if char_num != 0:
+                if lines[line_num][char_num - 1] == '*':
+                    maze[(line_num, char_num)].append(((line_num, char_num-2), int(lines[line_num][char_num - 2])))
+
+            # if it is the bottom-most, don't check for the neighbors to the bottom
+            if line_num != (len(lines[:-3]) - 1):
+                if lines[line_num+1][char_num] == '*':
+                    maze[(line_num, char_num)].append(((line_num+2, char_num), int(lines[line_num+2][char_num])))
+
+            # if it is the top-most, don't check for the neighbors to the top
+            if line_num != 0:
+                if lines[line_num-1][char_num] == '*':
+                    maze[(line_num, char_num)].append(((line_num-2, char_num), int(lines[line_num-2][char_num])))
+
+    return maze, heuristic, start, end
 
 # Version 2 of A* search
 def a_star_updated(filename):
+    graph, heuristic, start, goal = graph_from_file(filename)
+    print(graph)
+    print(heuristic)
+    print(start)
+    print(goal)
 
-    matrix, start, end = graph_from_file(filename)
-    matrix = np.array(matrix)
-    print(matrix)
-    visited = set()
+    # unlike uniform cost search, where the cost of the starting_point is zero,
+    # in a* search, the cost of the starting_point should take its heuristic into account.
+    frontier = [(heuristic[start], start, [])]
+    # explored will keep track of the explored nodes
+    explored = set()
 
-    available_moves = ((0, -1), (0, 1), (-1, 0), (1, 0))
-    
-    rows, cols = np.shape(matrix)
-
-    frontier = [(matrix[start[0]][start[1]], start, [])]
-   
-    print(frontier)
+    print("Applying A* search: ")
 
     while frontier:
         # we pop the first element of the frontier list because it is the one with
         # minimum cost. Next, we will explore its neighbors.
         (priority, current, path) = heapq.heappop(frontier)
 
-        if current in visited:
-            continue
-
-        visited.add(current)
-
-        if current == end:
-            print("Solution Path:  ", "-> ".join(str(state) for state in path+[current]), " with total cost", priority)
+        # check if we got to the goal. if so, end the loop and return the path to the goal
+        if current == goal:
+            print("Solution Path:  ", "-> ".join(str(state) for state in path + [current]), " with total cost",
+                  priority)
             return path + [current]
 
-        for moves in available_moves:
-            neighbour = (current[0] + moves[0], current[1] + moves[1])
+        # if it is already explored, it means that we already added its
+        # neighbors to the heap, so we can continue.
+        if current in explored:
+            continue
 
-            # validate neighbour
-            if neighbour[0] < 0 or neighbour[0] > rows-1 or neighbour[1] > cols-1 or neighbour[1] < 0:
-                continue
+        explored.add(current)
 
-            # check is there is wall or not
-            if matrix[neighbour[0]][neighbour[1]] == 0:
-                continue
+        # remember to add the neighbors of the recently explored node.
+        # check the treasure_map to find the neighbors and their respective costs
 
-            if neighbour not in visited:
-                cost = matrix[neighbour[0]][neighbour[1]]
-                heuristic_current = manhattan_distance(current, end)
-                heuristic_neighbour = manhattan_distance(neighbour, end)
-                heapq.heappush(frontier, (priority + cost - heuristic_current + heuristic_neighbour, neighbour, path + [current]))
+        for neighbor, cost in graph[current]:
+            if neighbor not in explored:
+                # the total cost equals the cost to get to the node from the start plus its own heuristic
+                print(current, "-", neighbor, ": Cost is", priority + cost - heuristic[current])
+                heapq.heappush(frontier,
+                               (priority + cost - heuristic[current] + heuristic[neighbor], neighbor, path + [current]))
+
+            print(frontier)
+
+    return None
 
 
-a_star_updated("maze.txt")
+#a_star_updated("maze.txt")
+path = bfs("maze.txt")
+
+print(path)
+
+path = uniform_cost_search_v2("maze2.txt")
