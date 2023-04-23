@@ -114,31 +114,102 @@ def a_star_search(graph, start, goal):
 
 
 # Request 2 - Breadth First Search:
-def bfs(graph, start, finish):
+def bfs(filename):
     # Keep track of visited nodes to avoid infinite loops and duplicate visits
+    
+    #note that heuristic is not used in this function
+    graph, heuristic, start, finish = graph_from_file(filename)
+    
     visited = set()
     # Use a queue to implement BFS. deque => double-ended queue
     queue = deque([(start, [start])]) # tuple contains current node and its path
     # Mark the start node as visited
     visited.add(start)
+    
+
+
+    i=0
 
     # Iterate over the queue until it is empty
     while queue:
         # Dequeue the node at the front of the queue and its path
         vertex, path = queue.popleft()
+
+       
+        if i>0:
+            vertex = vertex[0]
+        #print(graph)
+    
         # If we have reached the finish node, return the path to it
         if vertex == finish:
             return path
         # Otherwise, explore the neighbors of the current node
         for neighbor in graph[vertex]:
             # If we haven't visited the neighbor yet, mark it as visited and add it to the queue
+     
+            i=i+1
             if neighbor not in visited:
                 visited.add(neighbor)
                 # Append the neighbor to the current path to get the path to the neighbor
                 queue.append((neighbor, path + [neighbor]))
-
+        
     # If we have explored the entire graph and haven't found the finish node, return None
     return None
+
+
+
+#request 2
+
+def uniform_cost_search_v2(filename):
+     
+
+    print("Applying UCS:")
+
+
+     #note that heuristic is not used in this function
+    graph, heuristic, start, goal = graph_from_file(filename)
+    
+
+
+    # Priority queue of (priority, node, path).
+    # Initially, it only includes the start state <=> starting point.
+    frontier = [(0, start, [])]
+    # explored will keep track of the explored nodes
+    explored = set()
+
+    print("Starting point: Cost is 0")
+
+    # The while loop continues until the frontier queue becomes empty
+    # (i.e., there are no more nodes to explore). Or, it is also possible
+    # to end the loop if we already reached our goal.
+    while frontier:
+        # we pop the first element of the frontier list because it is the one with
+        # minimum cost. Next, we will explore its neighbors.
+        (priority, current, path) = heapq.heappop(frontier)
+
+        # check if we got to the goal. if so, end the loop and return the path to the goal
+        if current == goal:
+            print("Solution Path:  ", "-> ".join(str(state) for state in path+[current]), " with total cost", priority)
+            return path + [current]
+
+        # if it is already explored, it means that we already added its
+        # neighbors to the heap, so we can continue.
+        if current in explored:
+            continue
+
+        explored.add(current)
+
+        # remember to add the neighbors of the recently explored node.
+        # check the treasure_map to find the neighbors and their respective costs
+        for neighbor, cost in graph[current]:
+            if neighbor not in explored:
+                print(current, "-", neighbor, ": Cost is", priority+cost)
+                heapq.heappush(frontier, (priority + cost, neighbor, path + [current]))
+
+    # note the Completeness property: if there is a solution, the algorithm finds it, otherwise
+    # it reports failure, which is returning none.
+    return None
+
 
 
 # Define the Manhattan distance heuristic function to be used for the A* Search algorithm.
@@ -264,4 +335,9 @@ def a_star_updated(filename):
     return None
 
 
-a_star_updated("maze.txt")
+#a_star_updated("maze.txt")
+path = bfs("maze.txt")
+
+print(path)
+
+path = uniform_cost_search_v2("maze2.txt")
