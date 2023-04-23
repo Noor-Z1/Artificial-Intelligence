@@ -4,13 +4,13 @@ from collections import deque
 
 
 # Task 1
-
 # Request 1. Data structure to represent and construct the treasure map
 treasure_map = {"starting_point": [("stormy_ocean", 4), ("forest", 7)],
                 "stormy_ocean": [("stormy_ocean", 20), ("desert", 4)],
                 "forest": [("treasure", 4)],
                 "desert": [("treasure", 10)],
                 "treasure": []}
+
 
 heuristic = {"starting_point": 1, "stormy_ocean": 2, "forest": 3, "desert": 3, "treasure": 0}
 
@@ -94,7 +94,6 @@ def a_star_search(graph, start, goal):
       
         for neighbor, cost in graph[current]:
             if neighbor not in explored:
-
                 # the total cost equals the cost to get to the node from the start plus its own heuristic
                 print(current, "-", neighbor, ": Cost is", priority+cost - heuristic[current])
                 heapq.heappush(frontier, (priority + cost - heuristic[current] + heuristic[neighbor], neighbor, path + [current]))
@@ -105,13 +104,12 @@ def a_star_search(graph, start, goal):
 
 # path = a_star_search(treasure_map, "starting_point", "treasure")
 
+
 # Task 2
 
 # For creating the maze, take the coordinates of the start and finish from the user
 # assume that indeces start from (0,0) => top left  &  (n,n) => bottom right.
 # First, make sure that start and finish coordinates are valid and are within the maze.
-
-
 
 # Request 2 - Breadth First Search:
 def bfs(filename):
@@ -125,20 +123,16 @@ def bfs(filename):
     queue = deque([(start, [start])]) # tuple contains current node and its path
     # Mark the start node as visited
     visited.add(start)
-    
-
 
     i=0
-
+    
     # Iterate over the queue until it is empty
     while queue:
         # Dequeue the node at the front of the queue and its path
         vertex, path = queue.popleft()
 
-       
-        if i>0:
+        if i > 0:    # if i > 0, vertex will be in the form ( (a,b), cost ) and so we extract vertex[0]
             vertex = vertex[0]
-        #print(graph)
     
         # If we have reached the finish node, return the path to it
         if vertex == finish:
@@ -146,7 +140,6 @@ def bfs(filename):
         # Otherwise, explore the neighbors of the current node
         for neighbor in graph[vertex]:
             # If we haven't visited the neighbor yet, mark it as visited and add it to the queue
-     
             i=i+1
             if neighbor not in visited:
                 visited.add(neighbor)
@@ -156,20 +149,14 @@ def bfs(filename):
     # If we have explored the entire graph and haven't found the finish node, return None
     return None
 
-
-
-#request 2
-
+#Version 2 of UCS
 def uniform_cost_search_v2(filename):
      
 
-    print("Applying UCS:")
+    print("Applying UCS version 2:")
 
-
-     #note that heuristic is not used in this function
+    # note that heuristic is not used in this function
     graph, heuristic, start, goal = graph_from_file(filename)
-    
-
 
     # Priority queue of (priority, node, path).
     # Initially, it only includes the start state <=> starting point.
@@ -221,6 +208,7 @@ def manhattan_distance(point1, point2):
     return abs(x2 - x1) + abs(y2 - y1)
 
 
+# function to extract coordinates/tuple from a string
 def extract_coordinates(str1):
 
     start_index = str1.find("(")
@@ -234,6 +222,7 @@ def extract_coordinates(str1):
     return tuple(map(int, tuple_values))
 
 
+# function to create maze graph from txt file
 def graph_from_file(filename):
     
    # Open the file
@@ -247,7 +236,7 @@ def graph_from_file(filename):
     
     start = extract_coordinates(start_str)
     end = extract_coordinates(end_str)
-    print(lines[:-2])
+    #print(lines[:-2])
     maze = {}
     heuristic = {}
 
@@ -286,13 +275,14 @@ def graph_from_file(filename):
 
     return maze, heuristic, start, end
 
+
 # Version 2 of A* search
 def a_star_updated(filename):
     graph, heuristic, start, goal = graph_from_file(filename)
-    print(graph)
-    print(heuristic)
-    print(start)
-    print(goal)
+    #print(graph)
+    #print(heuristic)
+    #print(start)
+    #print(goal)
 
     # unlike uniform cost search, where the cost of the starting_point is zero,
     # in a* search, the cost of the starting_point should take its heuristic into account.
@@ -330,14 +320,9 @@ def a_star_updated(filename):
                 heapq.heappush(frontier,
                                (priority + cost - heuristic[current] + heuristic[neighbor], neighbor, path + [current]))
 
-            print(frontier)
+            #print(frontier)
 
     return None
 
 
-#a_star_updated("maze.txt")
-path = bfs("maze.txt")
 
-print(path)
-
-path = uniform_cost_search_v2("maze2.txt")
